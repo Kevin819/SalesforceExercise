@@ -12,5 +12,4 @@ public class TestVerifyDate {
         Date d = VerifyDate.CheckDates(Date.newInstance(2017, 3, 1), Date.newInstance(2017, 3, 31));
         System.assertEquals(Date.newInstance(2017, 3, 31), d);
     }
-
 }
