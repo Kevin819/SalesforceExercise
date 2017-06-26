@@ -1,0 +1,16 @@
+@isTest
+public class TestVerifyDate {
+    @isTest static void TestEndDateOfMonth(){
+        Date d = VerifyDate.CheckDates(Date.newInstance(2017, 2, 17), Date.newInstance(2017, 2, 15));
+        System.assertEquals(Date.newInstance(2017, 2, 28), d);
+    }
+    @isTest static void TestPositiveDate(){
+        Date d = VerifyDate.CheckDates(Date.newInstance(2017, 2, 17), Date.newInstance(2017, 2, 25));
+        System.assertEquals(Date.newInstance(2017, 2, 25), d);
+    }
+    @isTest static void TestBigDistanceDate(){
+        Date d = VerifyDate.CheckDates(Date.newInstance(2017, 3, 1), Date.newInstance(2017, 3, 31));
+        System.assertEquals(Date.newInstance(2017, 3, 31), d);
+    }
+
+}
