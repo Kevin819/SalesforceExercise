@@ -1,0 +1,19 @@
+trigger ClosedOpportunityTrigger on Opportunity (after insert) {
+      
+    List<Task> insertTask = new List<Task>();
+
+    // Iterate over the related opportunities
+    for(Opportunity opp : Trigger.New) {      
+        // Update the description when probability is greater 
+        // than 50% but less than 100% 
+        if (opp.stageName == 'Closed Won') {
+            Task newTask = new Task();
+            newTask.subject = 'Follow Up Test Task';
+            newTask.whatId = opp.Id;
+            insertTask.add(newTask);
+        }
+    }
+    
+    if(insertTask.size() > 0)
+        insert insertTask;
+}
