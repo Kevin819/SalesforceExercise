@@ -1,10 +1,15 @@
 trigger AccountAddressTrigger on Account (before insert) {
+    Integer i=0;
     for(Account a : Trigger.new){
-        Integer i=0;
+        System.debug(i++);
+        System.debug('BillingPostalCode : ' + a.BillingPostalCode);
+        System.debug('Match_Billing_Address__c : ' + a.Match_Billing_Address__c);
         if(a.BillingPostalCode != null && a.Match_Billing_Address__c == true){
             a.ShippingPostalCode = a.BillingPostalCode;
-            System.debug('set : ' + a.ShippingPostalCode);
+            System.debug('set ShippingPostalCode : ' + a.ShippingPostalCode);
         }
-        System.debug(i);
     }
 }
+//Excute the following apex code in Excute window.
+//Account a = new Account(Name='TestTrigger', BillingPostalCode='333-0853', Match_Billing_Address__c=true);
+//insert a;
