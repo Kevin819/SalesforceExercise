@@ -4,7 +4,7 @@ public class TestRestrictContactByName {
         Contact ctt = new Contact(LastName='INVALIDNAME');
         
         // Perform test
-        try{
+        try{	// If you don't want to use try, use Database.insert(ctt, false);
             Test.startTest();
             Database.SaveResult result = Database.insert(ctt);
             Test.stopTest();
