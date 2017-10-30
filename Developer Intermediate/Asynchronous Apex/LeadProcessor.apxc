@@ -1,0 +1,14 @@
+public class LeadProcessor implements Database.Batchable<sObject>{
+    public Database.QueryLocator start(Database.BatchableContext bc){
+        return Database.getQueryLocator('select id from lead where LastName like \'TestLead%\'');
+    }
+    public void execute(Database.BatchableContext bc, List<Lead> ldList){
+        for(Integer i=0;i<ldList.size();i++){
+            ldList.get(i).LeadSource = 'Dreamforce';
+        }
+        update ldList;
+    }
+    public void finish(Database.BatchableContext bc){
+        
+    }
+}
