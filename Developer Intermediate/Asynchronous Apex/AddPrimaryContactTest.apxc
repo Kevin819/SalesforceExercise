@@ -1,0 +1,25 @@
+@isTest
+public class AddPrimaryContactTest {
+	@testSetup
+    static void setup(){
+        List<Account> accListNY = new List<Account>();
+        List<Account> accListCA = new List<Account>();
+        for(integer i=0;i<50;i++){
+            Account acc = new Account(name='NYName'+i, BillingState='NY');
+            accListNY.add(acc);
+        }
+        insert accListNY;
+        for(integer i=0;i<50;i++){
+            Account acc = new Account(name='CAName'+i, BillingState='CA');
+            accListCA.add(acc);
+        }
+        insert accListCA;
+    }
+    static testmethod void testQueueable(){
+        AddPrimaryContact insCont = new AddPrimaryContact(new Contact(lastName='TestContactName'), 'CA');
+        Test.startTest();
+        Id batchID = System.enqueueJob(insCont);
+        Test.stopTest();
+        System.assertEquals(50, [select count() from Contact where lastName='TestContactName']);
+    }
+}
