@@ -1,0 +1,17 @@
+@isTest
+public class DailyLeadProcessorTest {
+    public static string cronExp = '0 47 20 14 11 ? 2017';
+    static testmethod void testScheduledJob(){
+        List<Lead> leadList = new List<Lead>();
+        for(integer i=0;i<200;i++){
+            lead l = new lead(LastName = 'LeadName' + i, Company = 'AbcCom' + i);
+            leadList.add(l);
+        }
+        insert leadList;
+        
+        Test.startTest();
+        String jobId = System.schedule('DailyLeadProcessorTest', cronExp, new DailyLeadProcessor());
+        Test.stopTest();
+        System.assertEquals(200, [select count() from lead where LastName like 'LeadName%' and LeadSource = 'Dreamforce']);
+    }
+}
