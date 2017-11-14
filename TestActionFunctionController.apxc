@@ -1,0 +1,13 @@
+public class TestActionFunctionController {
+    public TestActionFunctionController(ApexPages.StandardSetController controller) {//分页用
+
+    }
+    public TestActionFunctionController (ApexPages.StandardController stdController) {
+        Account acct = (Account)stdController.getRecord();//取得所有Account
+    }
+    public pageReference accountName() {
+        string accNa = Apexpages.currentPage().getParameters().get('accName');
+        system.debug('■■■■■ accNa = ' + accNa);
+        return null;
+    }
+}
