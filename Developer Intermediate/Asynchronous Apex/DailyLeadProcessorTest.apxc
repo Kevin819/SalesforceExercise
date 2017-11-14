@@ -1,6 +1,6 @@
 @isTest
 public class DailyLeadProcessorTest {
-    public static string cronExp = '0 47 20 14 11 ? 2017';
+    public static string cronExp = '0 47 20 14 11 ? 2017';  //2017 Nov. 14th 20:47:00
     static testmethod void testScheduledJob(){
         List<Lead> leadList = new List<Lead>();
         for(integer i=0;i<200;i++){
