@@ -1,0 +1,9 @@
+public class DailyLeadProcessor implements Schedulable {
+    public void execute(SchedulableContext ctx){
+        List<Lead> leadList = [select LeadSource from lead where LeadSource=''];
+        for(Lead l : leadList){
+            l.LeadSource = 'Dreamforce';
+        }
+        update leadList;
+    }
+}
