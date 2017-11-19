@@ -1,0 +1,19 @@
+public class myclass {
+    private final Opportunity o;
+    String tmp;
+    public myclass(ApexPages.StandardController stdController) {
+	    this.o= (Opportunity)stdController.getRecord();
+    }
+    public PageReference autoRun() {
+        String theId= ApexPages.currentPage().getParameters().get('id');
+        Opportunity o = [select id, name, AccountId from Opportunity where id =:theId];
+        if (o != null) {
+            Order odr= new Order(OpportunityId=o.id ,AccountId= o.AccountId, Name = o.Name,EffectiveDate=Date.today(), Status='Draft');
+            insert odr;
+            tmp=odr.id;
+        }
+        PageReference pageRef= new PageReference('/' + tmp);
+        pageRef.setRedirect(true);
+        return pageRef;
+    }
+}
