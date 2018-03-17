@@ -1,0 +1,9 @@
+@isTest
+private class ParkLocatorTest {
+    @isTest static void testCallout(){
+        Test.setMock(WebServiceMock.class, new ParkServiceMock());
+        String[] ret = ParkLocator.country('Japan');
+        String[] expect = new String[]{'park1','park2'};
+        System.assertEquals(expect, ret);
+    }
+}
