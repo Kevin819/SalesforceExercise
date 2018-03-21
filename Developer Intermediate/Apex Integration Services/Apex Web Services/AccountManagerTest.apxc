@@ -1,0 +1,24 @@
+@IsTest
+public class AccountManagerTest {
+    @IsTest static void testGetAccount(){
+        Id recordId = createTestRecord();
+        System.debug('recordId = ' + recordId);
+        RestRequest request = new RestRequest();
+        request.requestURI = 'https://resourceful-raccoon-490236-dev-ed.my.salesforce.com/services/apexrest/Account/'
+            + recordId + '/contacts';
+        request.httpMethod = 'GET';
+        RestContext.request = request;
+        Account acc = AccountManager.getAccount();
+        System.debug(acc != null);
+        System.assertEquals('Test record', acc.Name);
+    }
+    
+    // Helper method
+    static Id createTestRecord() {
+        // Create test record
+        Account accTest = new Account(
+            Name='Test record');
+        insert accTest;
+        return accTest.Id;
+    }         
+}
