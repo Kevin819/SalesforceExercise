@@ -7,8 +7,7 @@
         <lightning:formattedNumber value="{!v.item.Price__c}" style="currency"/>
     </p>
     <p>
-        Quantity:
-        <lightning:formattedNumber value="{!v.item.Quantity__c}" style="number"/>
+        Quantity:{!v.item.Quantity__c}
     </p>
     <p>
         <lightning:input type="toggle"
