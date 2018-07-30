@@ -1,0 +1,62 @@
+public class MaintenanceRequestHelper {
+    
+    public static void updateWorkOrders(List<Case> requestList){
+		List<Case> caseList = new List<Case>();
+        for(Case c : requestList){
+            // New a Maintenance Request
+            Case newMTReq = new Case();
+            newMTReq.Vehicle__c = c.Vehicle__c;
+            newMTReq.Equipment__c = c.Equipment__c;
+            newMTReq.Type = 'Routine Maintenance';
+            newMTReq.Status = 'New';
+            newMTReq.Origin = c.Origin;
+            newMTReq.Subject = 'Routine Mainten';
+            newMTReq.Date_Reported__c = Date.today();
+            newMTReq.Date_Due__c = Date.today().addDays(calculateDayDue(c.id));
+            newMTReq.old_case__c = String.valueOf(c.Id);
+            System.debug('newMTReq:'+newMTReq);
+            caseList.add(newMTReq);
+        }
+        if(caseList.size() > 0){
+            insert caseList;
+            updateWorkParts(caseList);
+        }
+    }
+    
+    private static void updateWorkParts(List<Case> caseList){
+        List<Work_Part__c> wpList = new List<Work_Part__c>();
+        Map<id, id> oldToNewCase = new Map<id, id>();
+        for(Case c : caseList){
+            oldToNewCase.put(Id.valueOf(c.old_case__c), c.id);
+        }
+        System.debug('oldToNewCase:'+oldToNewCase);
+        for(id wpId : oldToNewCase.keyset()){
+            List<Work_Part__c> wpTemp = [select Maintenance_Request__c from Work_Part__c where Maintenance_Request__r.id = :wpId];
+            System.debug('wpTemp:'+wpTemp);
+            for(Work_Part__c wp : wpTemp){
+                // Pls enable the [Allow reparenting] checkbox on "Maintenance Request" Field, 
+                // so that it can be updated.
+                wp.Maintenance_Request__c = oldToNewCase.get(wpId);
+                wpList.add(wp);
+            }
+        }
+        update wpList;
+    }
+    
+    private static Integer calculateDayDue(id caseId){
+        List<Work_Part__c> wpList = [select Equipment__r.Maintenance_Cycle__c from Work_Part__c where Maintenance_Request__r.id = :caseId];
+        System.debug('wpList:'+wpList);
+        if(wpList.size() > 0){
+            Decimal minCycleDate = wpList[0].Equipment__r.Maintenance_Cycle__c;
+            for(Work_Part__c wp : wpList){
+                Decimal temp = wp.Equipment__r.Maintenance_Cycle__c;
+                if(minCycleDate > temp) minCycleDate = temp;
+            }
+            
+            return Integer.valueOf(minCycleDate);
+        }else{
+            return 0;
+        }
+    }
+    
+}
