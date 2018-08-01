@@ -1,7 +1,18 @@
 public class MaintenanceRequestHelper {
+    public static List<Id> caseIds = new List<Id>();
+    public static Map<Id, Integer> dayDueMap = new Map<Id, Integer>();
     
     public static void updateWorkOrders(List<Case> requestList){
-		List<Case> caseList = new List<Case>();
+        for(case c : requestList){
+            caseIds.add(c.id);
+        }
+        
+        calculateDayDue();
+        System.debug('dayDueMap:'+dayDueMap);
+        System.debug('dayDueMap size:'+dayDueMap.size());
+        System.debug('requestList size:'+requestList.size());
+
+        List<Case> caseList = new List<Case>();
         for(Case c : requestList){
             // New a Maintenance Request
             Case newMTReq = new Case();
@@ -12,7 +23,7 @@ public class MaintenanceRequestHelper {
             newMTReq.Origin = c.Origin;
             newMTReq.Subject = 'Routine Mainten';
             newMTReq.Date_Reported__c = Date.today();
-            newMTReq.Date_Due__c = Date.today().addDays(calculateDayDue(c.id));
+            newMTReq.Date_Due__c = Date.today().addDays(dayDueMap.get(c.id));
             newMTReq.old_case__c = String.valueOf(c.Id);
             System.debug('newMTReq:'+newMTReq);
             caseList.add(newMTReq);
@@ -29,33 +40,41 @@ public class MaintenanceRequestHelper {
         for(Case c : caseList){
             oldToNewCase.put(Id.valueOf(c.old_case__c), c.id);
         }
-        System.debug('oldToNewCase:'+oldToNewCase);
-        for(id wpId : oldToNewCase.keyset()){
-            List<Work_Part__c> wpTemp = [select Maintenance_Request__c from Work_Part__c where Maintenance_Request__r.id = :wpId];
-            System.debug('wpTemp:'+wpTemp);
-            for(Work_Part__c wp : wpTemp){
-                // Pls enable the [Allow reparenting] checkbox on "Maintenance Request" Field, 
-                // so that it can be updated.
-                wp.Maintenance_Request__c = oldToNewCase.get(wpId);
-                wpList.add(wp);
-            }
+        
+        for(Work_Part__c wp : [select Maintenance_Request__r.id 
+                               from Work_Part__c where Maintenance_Request__r.id IN :caseIds])
+        {
+            // Pls enable the [Allow reparenting] checkbox on "Maintenance Request" Field, 
+            // so that it can be updated.
+            wp.Maintenance_Request__c = oldToNewCase.get(wp.Maintenance_Request__r.id);
+            wpList.add(wp);
+            
         }
+        
         update wpList;
     }
     
-    private static Integer calculateDayDue(id caseId){
-        List<Work_Part__c> wpList = [select Equipment__r.Maintenance_Cycle__c from Work_Part__c where Maintenance_Request__r.id = :caseId];
+    private static void calculateDayDue(){
+        List<Work_Part__c> wpList = [select Maintenance_Request__r.id, Equipment__r.Maintenance_Cycle__c 
+                                     from Work_Part__c where Maintenance_Request__r.id IN :caseIds];
         System.debug('wpList:'+wpList);
-        if(wpList.size() > 0){
-            Decimal minCycleDate = wpList[0].Equipment__r.Maintenance_Cycle__c;
-            for(Work_Part__c wp : wpList){
-                Decimal temp = wp.Equipment__r.Maintenance_Cycle__c;
-                if(minCycleDate > temp) minCycleDate = temp;
+        System.debug('wpList size:'+wpList.size());
+        if(wpList.size() == 0){
+            for(id caseid : caseIds){
+                dayDueMap.put(caseid, 0);
             }
-            
-            return Integer.valueOf(minCycleDate);
-        }else{
-            return 0;
+        }
+        for(Work_Part__c wp : wpList){
+            if(wp.Equipment__r.Maintenance_Cycle__c == null)
+                wp.Equipment__r.Maintenance_Cycle__c = 0;
+            if(dayDueMap.containsKey(wp.Maintenance_Request__r.id)){
+                Integer dayDue = dayDueMap.get(wp.Maintenance_Request__r.id);
+                if(dayDue > wp.Equipment__r.Maintenance_Cycle__c){
+                    dayDueMap.put(wp.Maintenance_Request__r.id, (Integer)wp.Equipment__r.Maintenance_Cycle__c);
+                }
+            }else{
+                dayDueMap.put(wp.Maintenance_Request__r.id, (Integer)wp.Equipment__r.Maintenance_Cycle__c);    
+            }
         }
     }
     
