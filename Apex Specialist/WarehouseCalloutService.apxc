@@ -1,0 +1,46 @@
+public with sharing class WarehouseCalloutService {
+
+    private static final String WAREHOUSE_URL = 'https://th-superbadge-apex.herokuapp.com/equipment';
+    
+    // complete this method to make the callout (using @future) to the
+    // REST endpoint and update equipment on hand.
+    @future(callout=true)
+    public static void runWarehouseEquipmentSync(){
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint(WAREHOUSE_URL);
+        request.setMethod('GET');
+        HttpResponse response = http.send(request);
+        if(response.getStatusCode() == 200){
+            List<wrapperClass> results = (List<wrapperClass>) System.JSON.deserialize(response.getBody(), List<wrapperClass>.class);
+            System.debug('results:'+results);
+            // Upsert Equipment
+            List<Product2> equipsForUpsert = new List<Product2>();
+            for(wrapperClass wc : results){
+                Product2 pd = new Product2();
+                //pd.id = Id.valueOf(wc.eqId);
+                pd.name = wc.name;
+                pd.Replacement_Part__c = wc.replacement;
+                pd.Cost__c = wc.cost;
+                pd.Current_Inventory__c = wc.quantity;
+                pd.Lifespan_Months__c = wc.lifespan;
+                pd.Maintenance_Cycle__c = wc.maintenanceperiod;
+                pd.Warehouse_SKU__c = wc.sku;
+                equipsForUpsert.add(pd);
+            }
+            upsert equipsForUpsert Product2.fields.Warehouse_SKU__c;
+        }
+    }
+    
+    class wrapperClass {
+        //public String _id;	
+        public Boolean replacement;
+        public Integer quantity;
+        public String name;
+        public Integer maintenanceperiod;
+        public Integer lifespan;
+        public Integer cost;
+        public String sku;
+    }
+    
+}
