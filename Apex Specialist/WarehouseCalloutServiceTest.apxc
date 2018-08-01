@@ -1,0 +1,36 @@
+@isTest
+private class WarehouseCalloutServiceTest {
+    // implement your mock callout test here
+    @isTest static void testPostCallout() {
+        // Set mock callout class 
+        Test.setMock(HttpCalloutMock.class, new WarehouseCalloutServiceMock()); 
+        
+        // This causes a fake response to be sent
+        // from the class that implements HttpCalloutMock. 
+        Test.startTest();
+        WarehouseCalloutService.runWarehouseEquipmentSync();
+        Test.stopTest();
+        
+        // Verify that the response received contains fake values
+        Product2 pd = [select name, Replacement_Part__c, Cost__c, Current_Inventory__c,
+                      Lifespan_Months__c, Maintenance_Cycle__c, Warehouse_SKU__c
+                      from Product2];
+        System.assertEquals('Generator 1000 kW', pd.name);
+        System.assertEquals(false, pd.Replacement_Part__c);
+        System.assertEquals(5000, pd.Cost__c);
+        System.assertEquals(5, pd.Current_Inventory__c);
+        System.assertEquals(120, pd.Lifespan_Months__c);
+        System.assertEquals(365, pd.Maintenance_Cycle__c);
+        System.assertEquals('100003', pd.Warehouse_SKU__c);
+    }
+    
+    public static String CRON_EXP = '0 0 0 15 3 ? 2022';
+    @isTest static void testScheduler() {
+
+        Test.setMock(HttpCalloutMock.class, new WarehouseCalloutServiceMock()); 
+
+        Test.startTest();
+        String jobId = System.schedule('ScheduledApexTest', CRON_EXP, new WarehouseSyncSchedule());    
+        Test.stopTest();
+    }
+}
